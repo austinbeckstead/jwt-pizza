@@ -25,8 +25,11 @@ test('purchase with login', async ({ page }) => {
   await page.getByRole('button', { name: 'Checkout' }).click();
 
   // Login
-  await login(page);
-
+  await page.getByPlaceholder('Email address').click();
+  await page.getByPlaceholder('Email address').fill('d@jwt.com');
+  await page.getByPlaceholder('Email address').press('Tab');
+  await page.getByPlaceholder('Password').fill('a');
+  await page.getByRole('button', { name: 'Login' }).click();
   // Pay
   await expect(page.getByRole('main')).toContainText('Send me those 2 pizzas right now!');
   await expect(page.locator('tbody')).toContainText('Veggie');
@@ -40,14 +43,43 @@ test('purchase with login', async ({ page }) => {
 
 test('admin Dashboard', async ({ page }) => {
 
+  // Login as admin
   await basicInit(page, Role.Admin);
   await login(page);
   await expect(page.getByRole('link', { name: 'Admin' })).toBeVisible();
+
+  // Open admin dashboard
   await page.getByRole('link', { name: 'Admin' }).click();
   await expect(page.getByRole('list')).toContainText('admin-dashboard');
   await expect(page.locator('h3')).toContainText('Franchises');
+
+  // Filter franchises
+  await page.getByRole('textbox', { name: 'Filter franchises' }).fill('Lotapizza');
+  await page.getByRole('button', { name: 'Submit' }).click();
   await expect(page.getByRole('table')).toContainText('LotaPizza');
   await expect(page.getByRole('table')).toContainText('Lehi');
+
+  // Create a franchise
+  await page.getByRole('button', { name: 'Add Franchise' }).click();
+  await expect(page.getByRole('heading')).toContainText('Create franchise');
+  await page.getByRole('textbox', { name: 'franchise name' }).fill('Test Franchise');
+  await page.getByRole('textbox', { name: 'franchise name' }).press('Tab');
+  await page.getByRole('textbox', { name: 'franchisee admin email' }).fill('testfranchisee@jwt.com');
+  await page.getByRole('button', { name: 'Create' }).click();
+
+  // Close a franchise
+  await page.getByRole('row', { name: 'LotaPizza  Close' }).getByRole('button').click();
+  await expect(page.getByRole('heading')).toContainText('Sorry to see you go');
+  await page.getByRole('button', { name: 'Close' }).click();
+
+  
+
+
+
+
+
+
+
 
 });
 

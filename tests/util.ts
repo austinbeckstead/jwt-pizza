@@ -56,7 +56,7 @@ export async function basicInit(page: Page, role: Role = Role.Diner) {
 
   // Standard franchises and stores
   await page.route(/\/api\/franchise(\?.*)?$/, async (route) => {
-    const franchiseRes = {
+    const getFranchiseRes = {
       franchises: [
         {
           id: 2,
@@ -71,8 +71,21 @@ export async function basicInit(page: Page, role: Role = Role.Diner) {
         { id: 4, name: 'topSpot', stores: [] },
       ],
     };
-    expect(route.request().method()).toBe('GET');
-    await route.fulfill({ json: franchiseRes });
+
+    if (route.request().method() === 'GET') {
+      await route.fulfill({ json: getFranchiseRes });
+    }
+    else if (route.request().method() === 'POST') {
+      const franchiseReq = route.request().postDataJSON();
+      const franchiseRes = { ...franchiseReq, id: 5 };
+      expect(route.request().method()).toBe('POST');
+      await route.fulfill({
+        json: franchiseRes,
+    });
+    }
+    else if (route.request().method() === 'DELETE') {
+      await route.fulfill({ status: 204 });
+    }
   });
 
   // Order a pizza.
@@ -90,7 +103,7 @@ export async function basicInit(page: Page, role: Role = Role.Diner) {
 }
 
 export async function login(page: Page) {
-  await page.getByRole('link', { name: 'Login' }).click();
+await page.getByRole('link', { name: 'Login', exact: true }).first().click();
   await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USER_EMAIL);
   await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USER_PASSWORD);
   await page.getByRole('button', { name: 'Login' }).click();
