@@ -10,6 +10,28 @@ test('login', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'KC' })).toBeVisible();
 });
 
+test('logout', async ({ page }) => {
+  await basicInit(page);
+  await login(page);
+  await page.getByRole('link', { name: 'Logout' }).click();
+
+  await expect(page.getByRole('link', { name: 'Login' })).toBeVisible();
+});
+
+test('register', async ({ page }) => {
+  await basicInit(page);
+  await page.getByRole('link', { name: 'Register' }).click();
+  await page.getByPlaceholder('Name').click();
+  await page.getByPlaceholder('Name').fill('Test User');
+  await page.getByPlaceholder('Name').press('Tab');
+  await page.getByPlaceholder('Email address').fill('testuser@jwt.com');
+  await page.getByPlaceholder('Email address').press('Tab');
+  await page.getByPlaceholder('Password').fill('password');
+  await page.getByRole('button', { name: 'Register' }).click();
+
+  await expect(page.getByRole('link', { name: 'TU' })).toBeVisible();
+});
+
 test('purchase with login', async ({ page }) => {
   await basicInit(page);
 
@@ -72,15 +94,17 @@ test('admin Dashboard', async ({ page }) => {
   await expect(page.getByRole('heading')).toContainText('Sorry to see you go');
   await page.getByRole('button', { name: 'Close' }).click();
 
-  
+});
 
+test('diner dashboard', async ({ page }) => {
+  await basicInit(page);
+  await login(page);
 
+  await page.getByRole('link', { name: 'KC' }).click();
+  await expect(page.getByRole('heading')).toContainText('Your pizza kitchen');
 
-
-
-
-
-
+  await expect(page.getByRole('main')).toContainText('Here is your history of all the good times.');
+  await expect(page.locator('tbody')).toContainText('23');
 });
 
 test('about page', async ({ page }) => {
@@ -88,4 +112,16 @@ test('about page', async ({ page }) => {
   await page.getByRole('link', { name: 'About' }).click();
   await expect(page.getByRole('main')).toContainText('The secret sauce');
 });
+
+test('history page', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('link', { name: 'History' }).click();
+  await expect(page.getByRole('heading')).toContainText('Mama Rucci, my my');
+});
+
+test('docs page', async ({ page }) => {
+  await page.goto('/docs');
+  await expect(page.getByRole('main')).toContainText('JWT Pizza API');
+});
+
 
