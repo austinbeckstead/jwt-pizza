@@ -169,4 +169,8 @@ test('docs page', async ({ page }) => {
   await expect(page.getByRole('main')).toContainText('JWT Pizza API');
 });
 
+test('not found page', async ({ page }) => {
+  await page.goto('/opps');
+  await expect(page.getByRole('main')).toContainText('It looks like we have dropped a pizza on the floor. Please try another page.');
+});
 
