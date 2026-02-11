@@ -118,6 +118,12 @@ export async function basicInit(page: Page, role: Role = Role.Diner) {
     }
   });
 
+  await page.route(/\/api\/franchise\/\d+\/store\/\d+$/, async (route) => {
+    if (route.request().method() === 'DELETE') {
+      await route.fulfill({ status: 204 });
+    }
+  });
+
   // Order a pizza.
   await page.route('*/**/api/order', async (route) => {
     if (route.request().method() === 'POST') {

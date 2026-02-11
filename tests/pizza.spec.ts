@@ -81,6 +81,17 @@ test('admin Dashboard', async ({ page }) => {
   await expect(page.getByRole('table')).toContainText('LotaPizza');
   await expect(page.getByRole('table')).toContainText('Lehi');
 
+});
+
+test('create a franchise', async ({ page }) => {
+  // Login as admin
+  await basicInit(page, Role.Admin);
+  await login(page);
+  await expect(page.getByRole('link', { name: 'Admin' })).toBeVisible();
+
+  // Open admin dashboard
+  await page.getByRole('link', { name: 'Admin' }).click();
+
   // Create a franchise
   await page.getByRole('button', { name: 'Add Franchise' }).click();
   await expect(page.getByRole('heading')).toContainText('Create franchise');
@@ -88,13 +99,47 @@ test('admin Dashboard', async ({ page }) => {
   await page.getByRole('textbox', { name: 'franchise name' }).press('Tab');
   await page.getByRole('textbox', { name: 'franchisee admin email' }).fill('testfranchisee@jwt.com');
   await page.getByRole('button', { name: 'Create' }).click();
+});
+
+
+test('close a franchise', async ({ page }) => {
+  // Login as admin
+  await basicInit(page, Role.Admin);
+  await login(page);
+  await expect(page.getByRole('link', { name: 'Admin' })).toBeVisible();
+
+  // Open admin dashboard
+  await page.getByRole('link', { name: 'Admin' }).click();
+
 
   // Close a franchise
-  await page.getByRole('row', { name: 'LotaPizza  Close' }).getByRole('button').click();
+  const lotaPizzaRow = page.getByRole('row', { name: /LotaPizza/ });
+  const closeFranchiseButton = lotaPizzaRow.getByRole('button', { name: 'Close' });
+  await expect(closeFranchiseButton).toBeVisible();
+  await closeFranchiseButton.click();
   await expect(page.getByRole('heading')).toContainText('Sorry to see you go');
   await page.getByRole('button', { name: 'Close' }).click();
-
 });
+
+test('close a store', async ({ page }) => {
+  // Login as admin
+  await basicInit(page, Role.Admin);
+  await login(page);
+  await expect(page.getByRole('link', { name: 'Admin' })).toBeVisible();
+
+  // Open admin dashboard
+  await page.getByRole('link', { name: 'Admin' }).click();
+
+  // Close a store
+  const lehiRow = page.getByRole('row', { name: /Lehi/ });
+  const closeStoreButton = lehiRow.getByRole('button', { name: 'Close' });
+  await expect(closeStoreButton).toBeVisible();
+  await closeStoreButton.click();
+  await expect(page.getByRole('heading')).toContainText('Sorry to see you go');
+  await page.getByRole('button', { name: 'Close' }).click();
+  await expect(page.getByRole('heading')).toContainText('Sorry to see you go');
+});
+
 
 test('diner dashboard', async ({ page }) => {
   await basicInit(page);
