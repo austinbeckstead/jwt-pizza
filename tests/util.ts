@@ -96,15 +96,9 @@ export async function basicInit(page: Page, role: Role = Role.Diner) {
     };
 
     if (method === 'GET') {
-      if (/\/api\/franchise\/\d+$/.test(url) && role === Role.Franchisee) {
-        await route.fulfill({ json: [getFranchiseRes.franchises[0]] });
-      } else if (/\/api\/franchise\?/.test(url)) {
           await route.fulfill({ json: getFranchiseRes });
-      } else {
-        await route.fulfill({ json: { franchises: [] } });
-      }
-
     }
+    // Createa a franchise
     else if (method === 'POST') {
       const franchiseReq = route.request().postDataJSON();
       const franchiseRes = { ...franchiseReq, id: 5 };
@@ -118,9 +112,35 @@ export async function basicInit(page: Page, role: Role = Role.Diner) {
     }
   });
 
+
+  await page.route(/\/api\/franchise\/\d+$/, async (route) => {
+    if (route.request().method() === 'GET') {
+      await route.fulfill({ json: [
+        {
+          id: 2,
+          name: 'LotaPizza',
+          stores: [
+            { id: 4, name: 'Lehi' },
+            { id: 5, name: 'Springville' },
+            { id: 6, name: 'American Fork' },
+          ],
+        },
+      ] });
+    }
+  });
+  
+  // Delete a Store
   await page.route(/\/api\/franchise\/\d+\/store\/\d+$/, async (route) => {
     if (route.request().method() === 'DELETE') {
       await route.fulfill({ status: 204 });
+    }
+  });
+
+  // Create a Store
+  await page.route(/\/api\/franchise\/\d+\/store$/, async (route) => {
+    if (route.request().method() === 'POST') {
+      const storeReq = route.request().postDataJSON();
+      await route.fulfill({ json: { id: 10, name: storeReq.name || 'New Store' } });
     }
   });
 

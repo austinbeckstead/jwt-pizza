@@ -140,8 +140,29 @@ test('close a store', async ({ page }) => {
   await expect(page.getByRole('heading')).toContainText('Sorry to see you go');
 });
 
+test('franchise dashboard', async ({ page }) => {
+  // Login as franchisee
+  console.log("Testing franchise dashboard");
+  await basicInit(page, Role.Franchisee);
+  await login(page);
+  await expect(page.getByLabel('Global').getByRole('link', { name: 'Franchise' })).toBeVisible();
+
+  // Open franchise dashboard
+
+  await page.getByLabel('Global').getByRole('link', { name: 'Franchise' }).click();
+  await expect(page.getByRole('main')).toContainText('Everything you need to run an JWT Pizza franchise. Your gateway to success.');
+
+  // Create a store
+
+  await page.getByRole('button', { name: 'Create store' }).click();
+  await expect(page.getByRole('heading')).toContainText('Create store');
+  await page.getByRole('textbox', { name: 'store name' }).fill('Test Store');
+  await page.getByRole('button', { name: 'Create' }).click();
+
+});
 
 test('diner dashboard', async ({ page }) => {
+  console.log("Testing diner dashboard");
   await basicInit(page);
   await login(page);
 
