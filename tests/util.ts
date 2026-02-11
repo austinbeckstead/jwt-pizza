@@ -11,19 +11,39 @@ export async function basicInit(page: Page, role: Role = Role.Diner) {
 
   // Authorize login for the given user
   await page.route('*/**/api/auth', async (route) => {
-    const loginReq = route.request().postDataJSON();
-    const user = validUsers[loginReq.email];
-    if (!user || user.password !== loginReq.password) {
-      await route.fulfill({ status: 401, json: { error: 'Unauthorized' } });
-      return;
+      if (route.request().method() === 'PUT') {
+      const loginReq = route.request().postDataJSON();
+      const user = validUsers[loginReq.email];
+      if (!user || user.password !== loginReq.password) {
+        await route.fulfill({ status: 401, json: { error: 'Unauthorized' } });
+        return;
+      }
+      loggedInUser = validUsers[loginReq.email];
+      const loginRes = {
+        user: loggedInUser,
+        token: 'abcdef',
+      };
+      await route.fulfill({ json: loginRes });
+    } else if (route.request().method() === 'DELETE') {
+      loggedInUser = undefined;
+      await route.fulfill({ status: 204 });
+    } else if (route.request().method() === 'POST') {
+      const registerReq = route.request().postDataJSON();
+      const newUser: User = {
+        id: '4',
+        name: registerReq.name,
+        email: registerReq.email,
+        password: registerReq.password,
+        roles: [{ role: Role.Diner }],
+      };
+      loggedInUser = newUser;
+      validUsers[registerReq.email] = newUser;
+      const registerRes = {
+        user: newUser,
+        token: 'abcdef',
+      };
+      await route.fulfill({ json: registerRes });
     }
-    loggedInUser = validUsers[loginReq.email];
-    const loginRes = {
-      user: loggedInUser,
-      token: 'abcdef',
-    };
-    expect(route.request().method()).toBe('PUT');
-    await route.fulfill({ json: loginRes });
   });
 
   // Return the currently logged in user
@@ -56,6 +76,9 @@ export async function basicInit(page: Page, role: Role = Role.Diner) {
 
   // Standard franchises and stores
   await page.route(/\/api\/franchise(\?.*)?$/, async (route) => {
+    const url = route.request().url();
+    const method = route.request().method();
+
     const getFranchiseRes = {
       franchises: [
         {
@@ -72,31 +95,57 @@ export async function basicInit(page: Page, role: Role = Role.Diner) {
       ],
     };
 
-    if (route.request().method() === 'GET') {
-      await route.fulfill({ json: getFranchiseRes });
+    if (method === 'GET') {
+      if (/\/api\/franchise\/\d+$/.test(url) && role === Role.Franchisee) {
+        await route.fulfill({ json: [getFranchiseRes.franchises[0]] });
+      } else if (/\/api\/franchise\?/.test(url)) {
+          await route.fulfill({ json: getFranchiseRes });
+      } else {
+        await route.fulfill({ json: { franchises: [] } });
+      }
+
     }
-    else if (route.request().method() === 'POST') {
+    else if (method === 'POST') {
       const franchiseReq = route.request().postDataJSON();
       const franchiseRes = { ...franchiseReq, id: 5 };
-      expect(route.request().method()).toBe('POST');
+      expect(method).toBe('POST');
       await route.fulfill({
         json: franchiseRes,
     });
     }
-    else if (route.request().method() === 'DELETE') {
+    else if (method === 'DELETE') {
       await route.fulfill({ status: 204 });
     }
   });
 
   // Order a pizza.
   await page.route('*/**/api/order', async (route) => {
-    const orderReq = route.request().postDataJSON();
-    const orderRes = {
+    if (route.request().method() === 'POST') {
+      const orderReq = route.request().postDataJSON();
+      const orderRes = {
       order: { ...orderReq, id: 23 },
       jwt: 'eyJpYXQ',
     };
-    expect(route.request().method()).toBe('POST');
-    await route.fulfill({ json: orderRes });
+      await route.fulfill({ json: orderRes });
+    } else if (route.request().method() === 'GET') {
+      const orderHistoryRes = {
+        id: "testOrder",
+        dinerId: "1",
+        orders: [
+          {
+            id: "23",
+            franchiseId: "2",
+            storeId: "4",
+            date: new Date().toISOString(),
+            items: [
+              { menuId: "1", description: "Veggie", price: 0.0038 },
+              { menuId: "2", description: "Pepperoni", price: 0.0042 },
+            ],
+          },
+        ],
+      }
+      await route.fulfill({ json: orderHistoryRes });
+    }
   });
 
   await page.goto('/');
