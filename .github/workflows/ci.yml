@@ -36,6 +36,16 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           npm run test:coverage
+      - name: Fail if coverage is below 80%
+        run: |
+          coverage=$(jq '.total.lines.pct' coverage/coverage-summary.json)
+          if [ "$coverage" = "null" ]; then
+            echo "Coverage not found!" && exit 1
+          fi
+          cov_num=$(printf '%.0f' "$coverage")
+          if [ "$cov_num" -lt 80 ]; then
+            echo "Test coverage $coverage% is below 80%!" && exit 1
+          fi
         
       - name: Update coverage
         run: |
