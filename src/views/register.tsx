@@ -15,6 +15,7 @@ export default function Register(props: Props) {
   const [password, setPassword] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [message, setMessage] = React.useState('');
+  const [isAdmin, setIsAdmin] = React.useState(false);
 
   const navigateToParentPath = useBreadcrumb();
   const navigateToLogin = useBreadcrumb('login');
@@ -27,7 +28,7 @@ export default function Register(props: Props) {
   async function register(event: React.FormEvent) {
     event.preventDefault();
     try {
-      props.setUser(await pizzaService.register(name, email, password));
+      props.setUser(await pizzaService.register(name, email, password, isAdmin));
       navigateToParentPath();
     } catch (error) {
       displayMessage(JSON.stringify(error));
@@ -96,7 +97,7 @@ export default function Register(props: Props) {
                   className="py-3 ps-11 pe-4 block w-full bg-white/10 border-white/20 text-white placeholder:text-white rounded-lg text-sm focus:border-white/30 focus:ring-white/30 sm:p-4 sm:ps-11"
                   placeholder="Password"
                 />
-                <button type="button" data-hs-toggle-password='{"target": "#password"}' className="text-neutral-400 absolute top-0 end-0 p-3 sm:p-4">
+                <button title="Toggle password visibility" type="button" data-hs-toggle-password='{"target": "#password"}' className="text-neutral-400 absolute top-0 end-0 p-3 sm:p-4">
                   <CloseEyeIcon />
                 </button>
 
@@ -105,10 +106,20 @@ export default function Register(props: Props) {
                 </div>
               </div>
             </div>
-
+            <div className="flex flex-row items-center mt-4">
+              <input
+                id="isAdmin"
+                type="checkbox"
+                checked={isAdmin}
+                onChange={(e) => setIsAdmin(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="isAdmin" className="text-white">Register as Admin</label>
+            </div>
             <div className="flex flex-row mt-8">
               <Button title="Register" submit onPress={() => {}} />
             </div>
+
             <div className="text-white italic">
               Already have an account?{' '}
               <span className="underline hover:text-orange-400" onClick={navigateToLogin}>
