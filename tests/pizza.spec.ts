@@ -73,7 +73,7 @@ test('admin Dashboard', async ({ page }) => {
   // Open admin dashboard
   await page.getByRole('link', { name: 'Admin' }).click();
   await expect(page.getByRole('list')).toContainText('admin-dashboard');
-  await expect(page.locator('h3')).toContainText('Franchises');
+  await expect(page.getByRole('heading', {name: 'Franchises'})).toBeVisible();
 
   // Filter franchises
   await page.getByRole('textbox', { name: 'Filter franchises' }).fill('Lotapizza');
