@@ -47,9 +47,26 @@ export async function basicInit(page: Page, role: Role = Role.Diner) {
   });
 
   // Return the currently logged in user
-  await page.route('*/**/api/user/me', async (route) => {
+  await page.route(/.*\/api\/user\/me$/, async (route) => {
     expect(route.request().method()).toBe('GET');
     await route.fulfill({ json: loggedInUser });
+  });
+
+  // List users
+  await page.route(/\/api\/user(?!\/me)(?:\?.*)?$/, async (route) => {
+    const url = route.request().url();
+    expect(route.request().method()).toBe('GET');
+    const getUsersRes = {
+      users: [
+        {
+          id: '1',
+          name: 'Test User',
+          email: 'test@jwt.com'
+        }
+      ],
+      more: false,
+    };
+    await route.fulfill({ json: getUsersRes });
   });
 
   // A standard menu
@@ -93,6 +110,7 @@ export async function basicInit(page: Page, role: Role = Role.Diner) {
         { id: 3, name: 'PizzaCorp', stores: [{ id: 7, name: 'Spanish Fork' }] },
         { id: 4, name: 'topSpot', stores: [] },
       ],
+      more: false,
     };
 
     if (method === 'GET') {
