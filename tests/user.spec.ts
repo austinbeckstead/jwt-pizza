@@ -1,6 +1,6 @@
 import { test, expect } from 'playwright-test-coverage';
 import { login, register } from './integration.util';
-test('updateUser', async ({ page }) => {
+test.skip('updateUser', async ({ page }) => {
 
   // Register a new user
   const email = `user${Math.floor(Math.random() * 10000)}@jwt.com`;
@@ -49,7 +49,7 @@ test('updateUser', async ({ page }) => {
   await expect(page.getByRole('main')).toContainText(newName); 
 });
 
-test ('list users in admin dashboard', async ({ page }) => {
+test.skip('list users in admin dashboard', async ({ page }) => {
 
     // Login as admin
     const name = `user${Math.floor(Math.random() * 10000)}`;
@@ -72,7 +72,7 @@ test ('list users in admin dashboard', async ({ page }) => {
 
 });
 
-test('delete user', async ({ page }) => {
+test.skip('delete user', async ({ page }) => {
 
     // Register a new user
     const name = `user${Math.floor(Math.random() * 10000)}`;

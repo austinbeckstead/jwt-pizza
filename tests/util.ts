@@ -2,12 +2,12 @@ import { expect } from 'playwright-test-coverage';
 import { User, Role } from "../src/service/pizzaService";
 import { Page } from '@playwright/test';
 
-const TEST_USER_EMAIL = 'd@jwt.com';
-const TEST_USER_PASSWORD = 'a';
+const TEST_USER_EMAIL = 'test@jwt.com';
+const TEST_USER_PASSWORD = 'password';
 
 export async function basicInit(page: Page, role: Role = Role.Diner) {
   let loggedInUser: User | undefined;
-  const validUsers: Record<string, User> = { [TEST_USER_EMAIL]: { id: '3', name: 'Kai Chen', email: TEST_USER_EMAIL, password: TEST_USER_PASSWORD, roles: [{ role: role }] } };
+  const validUsers: Record<string, User> = { [TEST_USER_EMAIL]: { id: '3', name: 'Test User', email: TEST_USER_EMAIL, password: TEST_USER_PASSWORD, roles: [{ role: role }] } };
 
   // Authorize login for the given user
   await page.route('*/**/api/auth', async (route) => {
@@ -57,16 +57,29 @@ export async function basicInit(page: Page, role: Role = Role.Diner) {
     const url = route.request().url();
     expect(route.request().method()).toBe('GET');
     const getUsersRes = {
-      users: [
-        {
-          id: '1',
-          name: 'Test User',
-          email: 'test@jwt.com'
-        }
-      ],
+      users: Object.values(validUsers),
       more: false,
     };
     await route.fulfill({ json: getUsersRes });
+  });
+
+  // Handle user updates and deletions
+  await page.route(/\/api\/user\/\d+$/, async (route) => {
+    const method = route.request().method();
+    if (method === 'PUT') {
+      const updatedUser = route.request().postDataJSON();
+      validUsers[updatedUser.email] = updatedUser;
+      loggedInUser = updatedUser;
+      await route.fulfill({ json: { user: updatedUser, token: 'abcdef' } });
+    } else if (method === 'DELETE') {
+      const url = route.request().url();
+      const id = url.split('/').pop();
+      const emailToDelete = Object.keys(validUsers).find(email => validUsers[email].id === id);
+      if (emailToDelete) {
+        delete validUsers[emailToDelete];
+      }
+      await route.fulfill({ status: 204 });
+    }
   });
 
   // A standard menu
@@ -195,9 +208,9 @@ export async function basicInit(page: Page, role: Role = Role.Diner) {
   await page.goto('/');
 }
 
-export async function login(page: Page) {
+export async function login(page: Page, email: string = TEST_USER_EMAIL, password: string = TEST_USER_PASSWORD) {
 await page.getByRole('link', { name: 'Login', exact: true }).first().click();
-  await page.getByRole('textbox', { name: 'Email address' }).fill(TEST_USER_EMAIL);
-  await page.getByRole('textbox', { name: 'Password' }).fill(TEST_USER_PASSWORD);
+  await page.getByRole('textbox', { name: 'Email address' }).fill(email);
+  await page.getByRole('textbox', { name: 'Password' }).fill(password);
   await page.getByRole('button', { name: 'Login' }).click();
 }

@@ -7,7 +7,7 @@ test('login', async ({ page }) => {
   await basicInit(page);
   await login(page);
 
-  await expect(page.getByRole('link', { name: 'KC' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'TU' })).toBeVisible();
 });
 
 test('logout', async ({ page }) => {
@@ -24,7 +24,7 @@ test('register', async ({ page }) => {
   await page.getByPlaceholder('Name').click();
   await page.getByPlaceholder('Name').fill('Test User');
   await page.getByPlaceholder('Name').press('Tab');
-  await page.getByPlaceholder('Email address').fill('testuser@jwt.com');
+  await page.getByPlaceholder('Email address').fill('test@jwt.com');
   await page.getByPlaceholder('Email address').press('Tab');
   await page.getByPlaceholder('Password').fill('password');
   await page.getByRole('button', { name: 'Register' }).click();
@@ -48,9 +48,9 @@ test('purchase with login', async ({ page }) => {
 
   // Login
   await page.getByPlaceholder('Email address').click();
-  await page.getByPlaceholder('Email address').fill('d@jwt.com');
+  await page.getByPlaceholder('Email address').fill('test@jwt.com');
   await page.getByPlaceholder('Email address').press('Tab');
-  await page.getByPlaceholder('Password').fill('a');
+  await page.getByPlaceholder('Password').fill('password');
   await page.getByRole('button', { name: 'Login' }).click();
   // Pay
   await expect(page.getByRole('main')).toContainText('Send me those 2 pizzas right now!');
@@ -81,7 +81,7 @@ test('admin Dashboard', async ({ page }) => {
   await page.getByTitle('Filter Users').click();
   await expect(page.getByTitle('User Table')).toContainText('Test User')
   await expect(page.getByTitle('User Table')).toContainText('test@jwt.com');
-  
+
   // Filter franchises
   await page.getByRole('textbox', { name: 'Filter franchises' }).fill('Lotapizza');
   await page.getByTitle('Filter Franchises').click();
@@ -172,7 +172,7 @@ test('diner dashboard', async ({ page }) => {
   await basicInit(page);
   await login(page);
 
-  await page.getByRole('link', { name: 'KC' }).click();
+  await page.getByRole('link', { name: 'TU' }).click();
   await expect(page.getByRole('heading')).toContainText('Your pizza kitchen');
 
   await expect(page.getByRole('main')).toContainText('Here is your history of all the good times.');
