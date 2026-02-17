@@ -73,14 +73,20 @@ test('admin Dashboard', async ({ page }) => {
   // Open admin dashboard
   await page.getByRole('link', { name: 'Admin' }).click();
   await expect(page.getByRole('list')).toContainText('admin-dashboard');
+  await expect(page.getByRole('heading', {name: 'Users'})).toBeVisible();
   await expect(page.getByRole('heading', {name: 'Franchises'})).toBeVisible();
 
+  //Filter Users
+  await page.getByRole('textbox', { name: 'Filter users' }).fill('Test');
+  await page.getByTitle('Filter Users').click();
+  await expect(page.getByTitle('User Table')).toContainText('Test User')
+  await expect(page.getByTitle('User Table')).toContainText('test@jwt.com');
+  
   // Filter franchises
   await page.getByRole('textbox', { name: 'Filter franchises' }).fill('Lotapizza');
-  await page.getByRole('button', { name: 'Submit' }).click();
-  await expect(page.getByRole('table')).toContainText('LotaPizza');
-  await expect(page.getByRole('table')).toContainText('Lehi');
-
+  await page.getByTitle('Filter Franchises').click();
+  await expect(page.getByTitle('Franchise Table')).toContainText('LotaPizza');
+  await expect(page.getByTitle('Franchise Table')).toContainText('Lehi');
 });
 
 test('create a franchise', async ({ page }) => {
