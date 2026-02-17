@@ -52,9 +52,10 @@ test('updateUser', async ({ page }) => {
 test ('list users in admin dashboard', async ({ page }) => {
 
     // Login as admin
-    const email = `user${Math.floor(Math.random() * 10000)}@jwt.com`;
+    const name = `user${Math.floor(Math.random() * 10000)}`;
+    const email = `${name}@jwt.com`;
     await page.goto('/');
-    await register(page, 'pizza diner', email, 'diner', true);
+    await register(page, name, email, 'diner', true);
     await login(page, email, 'diner');
     await expect(page.getByRole('link', { name: 'Admin' })).toBeVisible();
 
@@ -62,18 +63,23 @@ test ('list users in admin dashboard', async ({ page }) => {
     await page.getByRole('link', { name: 'Admin' }).click();
     await expect(page.getByRole('list')).toContainText('admin-dashboard');
 
+    // Filter users 
+    await page.getByRole('textbox', { name: 'Filter users' }).fill(name);
+    await page.getByTitle('Filter Users').click();
+
     // Check that the user we just created is in the user list
-    await expect(page.getByRole('table')).toContainText(email);
+    await expect(page.getByTitle('User Table')).toContainText(email);
 
 });
 
 test('delete user', async ({ page }) => {
 
     // Register a new user
-    const email = `user${Math.floor(Math.random() * 10000)}@jwt.com`;
+    const name = `user${Math.floor(Math.random() * 10000)}`;
+    const email = `${name}@jwt.com`;
     const adminEmail = `admin${Math.floor(Math.random() * 10000)}@jwt.com`;
     await page.goto('/');
-    await register(page, 'pizza diner', email, 'diner');
+    await register(page, name, email, 'diner');
     await page.getByRole('link', { name: 'Logout' }).click();
     await register(page, 'admin', adminEmail, 'diner', true);
     await login(page, adminEmail, 'diner');
@@ -83,6 +89,10 @@ test('delete user', async ({ page }) => {
     await page.getByRole('link', { name: 'Admin' }).click();
     await expect(page.getByRole('list')).toContainText('admin-dashboard');
 
+    // Filter users 
+    await page.getByRole('textbox', { name: 'Filter users' }).fill(name);
+    await page.getByTitle('Filter Users').click();
+
     // Delete the user we just created
     const userRow = page.getByRole('row', { name: new RegExp(email) });
     const deleteButton = userRow.getByRole('button', { name: 'Delete' });
@@ -90,9 +100,8 @@ test('delete user', async ({ page }) => {
     await deleteButton.click();
 
     // Confirm deletion
-    await expect(page.locator('h3')).toContainText('Delete user');
     await page.getByRole('button', { name: 'Delete' }).click();
 
     // Check that the user is no longer in the user list
-    await expect(page.getByRole('table')).not.toContainText(email);
+    await expect(page.getByTitle('User Table')).not.toContainText(email);
 });
